@@ -1,0 +1,267 @@
+<html>
+<head>
+    <base href="." />
+    <title>Time Difference Calculator by Sourabh</title>
+    <style>
+        :root {
+            --primary-color: #00ff9d;
+            --bg-color: #1a1a1a;
+            --text-color: #fff;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            border: 2px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            max-width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .ascii-art {
+            white-space: pre;
+            font-size: 14px;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .container::before {
+            content: "╔═══════════════════════════════╗";
+            position: absolute;
+            top: -15px;
+            left: 0;
+            width: 100%;
+            color: var(--primary-color);
+        }
+
+        .container::after {
+            content: "╚═══════════════════════════════╝";
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            color: var(--primary-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: #2a2a2a;
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            resize: vertical;
+        }
+
+        .results {
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid var(--primary-color);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            flex: 1;
+            min-width: 120px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        button::before {
+            content: "[";
+            position: absolute;
+            left: 5px;
+        }
+
+        button::after {
+            content: "]";
+            position: absolute;
+            right: 5px;
+        }
+
+        button:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .total {
+            font-size: 1.2em;
+            color: var(--primary-color);
+            margin: 20px 0;
+            text-align: center;
+            padding: 12px;
+            border: 1px solid var(--primary-color);
+        }
+
+        .header-ascii {
+            white-space: pre;
+            text-align: center;
+            color: var(--primary-color);
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header-ascii {
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            button {
+                min-width: 100%;
+                margin: 5px 0;
+            }
+
+            .total {
+                font-size: 1.1em;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-ascii">
+    ╔══════════════════════════════════════════════════╗
+    _____ ____  __  ______  ___    ____  __  __
+   / ___// __ \/ / / / __ \/   |  / __ )/ / / /
+  \__ \/ / / / / / / /_/ / /| | / __  / /_/ /
+ ___/ / /_/ / /_/ / _, _/ ___ |/ /_/ / __  /
+/____/\____/\____/_/ |_/_/  |_/_____/_/ /_/
+                                                 
+                      Calculator v1.0
+                    Created by Sourabh
+    ╚═════════════════════════════════════════════════╝
+</div>
+
+<div class="container">
+    <textarea id="timeInput" placeholder="ENTER TIME"></textarea>
+    <div class="button-container">
+        <button onclick="calculateDifferences()">Calculate Differences</button>
+        <button onclick="copyResults()">Copy Results</button>
+    </div>
+    <div id="results" class="results"></div>
+    <div id="total" class="total"></div>
+</div>
+
+<script>
+function parseTime(timeStr) {
+    timeStr = timeStr.trim().toLowerCase();
+    let hours = 0, minutes = 0, isPM = false;
+
+    if (timeStr.includes('am') || timeStr.includes('pm')) {
+        isPM = timeStr.includes('pm');
+        timeStr = timeStr.replace(/(am|pm)/g, '').trim();
+    }
+
+    let [h, m] = timeStr.split(':').map(n => parseInt(n));
+    hours = h;
+    minutes = m || 0;
+
+    if (isPM && hours !== 12) hours += 12;
+    if (!isPM && hours === 12) hours = 0;
+    
+    if (!timeStr.includes('am') && !timeStr.includes('pm')) {
+        if (hours < 7) hours += 12;
+    }
+
+    return hours * 60 + minutes;
+}
+
+function formatTime(minutes) {
+    let hours = Math.floor(minutes / 60);
+    let mins = minutes % 60;
+    let period = 'AM';
+
+    if (hours >= 12) {
+        period = 'PM';
+        if (hours > 12) hours -= 12;
+    }
+    if (hours === 0) hours = 12;
+
+    return `${hours}:${mins.toString().padStart(2, '0')} ${period}`;
+}
+
+function formatDuration(minutes) {
+    let hours = Math.floor(minutes / 60);
+    let mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+}
+
+function calculateDifferences() {
+    const input = document.getElementById('timeInput').value;
+    const results = document.getElementById('results');
+    const totalElement = document.getElementById('total');
+    
+    const times = input.split(/[\n\s]+/).filter(t => t.trim());
+    let totalDuration = 0;
+    let output = '';
+
+    for (let i = 0; i < times.length - 1; i += 2) {
+        const start = parseTime(times[i]);
+        const end = parseTime(times[i + 1]);
+        
+        let diff = end - start;
+        if (diff < 0) diff += 24 * 60;
+
+        totalDuration += diff;
+        output += `${formatTime(start)} → ${formatTime(end)} = ${formatDuration(diff)}\n`;
+    }
+
+    results.innerText = output;
+    totalElement.innerText = `Total Duration: ${formatDuration(totalDuration)}`;
+}
+
+function copyResults() {
+    const results = document.getElementById('results').innerText;
+    const total = document.getElementById('total').innerText;
+    navigator.clipboard.writeText(results + '\n' + total)
+        .then(() => alert('Results copied to clipboard!'))
+        .catch(err => console.error('Failed to copy: ', err));
+}
+</script>
+
+</body>
+</html>
